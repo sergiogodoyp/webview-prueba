@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integración de Archivos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
+    <script src="script-local.js"></script>
+</head>
+<body>
+    <h1>Integración de Archivos en un Solo Documento</h1>
+
+    <h2>Prueba de acceso a archivos</h2>
+    <button onclick="tryFileAccess()">Intentar acceso a archivos</button>
+    <script>
+        function tryFileAccess() {
+            try {
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.click();
+                alert('Acceso a archivos permitido!');
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+    </script>
+
+    <h2>Prueba de Cookies en WKWebView</h2>
+    <button onclick="setCookie()">Establecer Cookie</button>
+    <button onclick="getCookie()">Obtener Cookie</button>
+    <button onclick="deleteCookie()">Eliminar Cookie</button>
+    <div id="results">Resultados aparecerán aquí...</div>
+    <script>
+        const COOKIE_NAME = "testCookie";
+        
+        function setCookie() {
+            const value = "valor_de_prueba_" + new Date().getTime();
+            const expires = new Date();
+            expires.setDate(expires.getDate() + 7);
+            document.cookie = `${COOKIE_NAME}=${value}; expires=${expires.toUTCString()}; path=/`;
+            showResult(`Cookie establecida: ${COOKIE_NAME}=${value}`);
+        }
+        
+        function getCookie() {
+            const cookies = document.cookie.split(';');
+            let result = "No se encontró la cookie";
+            cookies.forEach(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                if(name === COOKIE_NAME) {
+                    result = `Cookie encontrada: ${name}=${value}`;
+                }
+            });
+            showResult(result);
+        }
+        
+        function deleteCookie() {
+            document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            showResult(`Cookie eliminada: ${COOKIE_NAME}`);
+        }
+        
+        function showResult(message) {
+            document.getElementById('results').innerHTML = message;
+            console.log(message);
+        }
+    </script>
+
+    <h2>Prueba de Content Security Policy (CSP)</h2>
+    <p id="inline-script" class="fail">⏳ Script en línea: pendiente</p>
+    <p id="external-script" class="fail">⏳ Script externo permitido: pendiente</p>
+    <p id="img-same-origin" class="fail">⏳ Imagen desde mismo origen: pendiente</p>
+    <p id="img-cross-origin" class="fail">⏳ Imagen de otro dominio: pendiente</p>
+    <script>
+        document.getElementById("inline-script").textContent = "🚫 Script en línea ejecutado (CSP no lo bloqueó)";
+        document.getElementById("inline-script").className = "fail";
+    </script>
+    <script src="script-local.js"></script>
+    <img src="img/CSP.jpg" alt="logo local" onload="document.getElementById('img-same-origin').textContent = '✅ Imagen local cargada correctamente'; document.getElementById('img-same-origin').className = 'ok';" onerror="document.getElementById('img-same-origin').textContent = '🚫 Imagen local NO cargada'; document.getElementById('img-same-origin').className = 'fail';">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/120px-React-icon.svg.png" alt="Imagen externa" onload="document.getElementById('img-cross-origin').textContent = '🚫 Imagen externa cargada (CSP no la bloqueó)'; document.getElementById('img-cross-origin').className = 'fail';" onerror="document.getElementById('img-cross-origin').textContent = '✅ Imagen externa bloqueada por CSP'; document.getElementById('img-cross-origin').className = 'ok';">
+
+    <h2>Pruebas con DOM</h2>
+    <input type="text" id="inputTexto" placeholder="Escribe algo...">
+    <button onclick="guardarEnLocalStorage()">Guardar</button>
+    <p>Dato guardado: <span id="etiqueta"></span></p>
+    <script>
+        function guardarEnLocalStorage() {
+            const inputValue = document.getElementById('inputTexto').value;
+            localStorage.setItem('datoGuardado', inputValue);
+            document.getElementById('etiqueta').innerText = inputValue;
+        }
+
+        function cargarDesdeLocalStorage() {
+            const storedValue = localStorage.getItem('datoGuardado');
+            if (storedValue) {
+                document.getElementById('etiqueta').innerText = storedValue;
+            }
+        }
+        window.onload = cargarDesdeLocalStorage;
+    </script>
+
+    <h2>Prueba de Múltiples Ventanas</h2>
+    <button onclick="abrirVentana()">Abrir Ventana Emergente</button>
+    <p>Mensaje recibido: <span id="mensajeRecibido"></span></p>
+    <script>
+        let popupWindow;
+
+        function abrirVentana() {
+            popupWindow = window.open("", "popup", "width=400,height=300");
+            popupWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Ventana Emergente</title>
+                </head>
+                <body>
+                    <h1>Ventana Emergente</h1>
+                    <input type="text" id="mensaje" placeholder="Escribe un mensaje">
+                    <button id="enviarBtn">Enviar a Principal</button>
+                </body>
+                </html>
+            `);
+            popupWindow.onload = function () {
+                const script = popupWindow.document.createElement('script');
+                script.textContent = `
+                    function enviarMensaje() {
+                        const mensaje = document.getElementById('mensaje').value;
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.recibirMensaje(mensaje);
+                        } else {
+                            alert('No se puede comunicar con la ventana principal.');
+                        }
+                    }
+                    document.getElementById('enviarBtn').addEventListener('click', enviarMensaje);
+                `;
+                popupWindow.document.body.appendChild(script);
+            };
+        }
+
+        function recibirMensaje(mensaje) {
+            document.getElementById('mensajeRecibido').innerText = mensaje;
+        }
+    </script>
+
+    <h2>Prueba de Multipestañas</h2>
+    <a href="https://www.google.com" target="_blank">Abrir Google en nueva pestaña</a><br>
+    <a href="https://www.github.com" target="_blank">Abrir GitHub en nueva pestaña</a><br>
+    <button onclick="window.open('https://www.android.com')">Abrir Android.com</button>
+    <button onclick="openModal()">Abrir modal/popup</button>
+    <script>
+        function openModal() {
+            const modal = window.open('', 'modalWindow', 'width=500,height=300,modal=yes');
+            modal.document.write(`
+                <html>
+                <head><title>Ventana Modal</title></head>
+                <body>
+                    <h2>Esto es una ventana modal/popup</h2>
+                    <p>Debería comportarse como una pestaña modal.</p>
+                    <button onclick="window.close()">Cerrar</button>
+                </body>
+                </html>
+            `);
+        }
+    </script>
+</body>
+</html>

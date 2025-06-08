@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Geolocation</title>
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocalización no es soportada por este navegador.");
+            }
+        }
+
+        function showPosition(position) {
+            document.getElementById("output").innerText =
+                "Latitud: " + position.coords.latitude +
+                "\nLongitud: " + position.coords.longitude;
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Permiso denegado.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Ubicación no disponible.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Tiempo de espera agotado.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Error desconocido.");
+                    break;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Prueba de Geolocalización</h1>
+    <button onclick="getLocation()">Obtener Ubicación</button>
+    <pre id="output"></pre>
+</body>
+</html>
