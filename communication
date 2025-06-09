@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebMessage Example</title>
+</head>
+<body>
+<h1>Pruebas con DOM</h1>
+<input type="text" id="inputTexto" placeholder="Escribe algo...">
+<button onclick="guardarEnLocalStorage()">Guardar</button>
+<p>Dato guardado: <span id="etiqueta"></span></p>
+
+
+<h1>WebMessage Example</h1>
+<button onclick="sendMessageToAndroid()">Send Message to Android</button>
+<p>Esta página espera recibir mensajes desde una aplicación Android.</p>
+<ul></ul>
+<script>
+    console.log("tohure webview rendering");
+
+    const list = document.querySelector("ul");
+    let port1;
+
+    // Listen for the initial port transfer message
+    window.addEventListener("message", initPort);
+
+    // Setup the transfered port
+    function initPort(e) {
+      console.log("llego -->"+JSON.stringify(e.source))
+      console.log("llego -->"+JSON.stringify(e.data))
+      console.log("llego -->"+JSON.stringify(e.origin))
+
+      const listItem = document.createElement("li");
+      listItem.textContent = e.data;
+      list.appendChild(listItem);
+
+      if (e.ports[0]) {
+        console.log("hay puerto 0")
+        port1 = e.ports[0];
+        port1.onmessage = onMessage;
+      }
+    }
+
+    // Handle messages received on port0
+    function onMessage(e) {
+            console.log("Si le llegó Port1");
+            const listItem = document.createElement("li");
+            listItem.textContent = e.data;
+            list.appendChild(listItem);
+    }
+
+    function sendMessageToAndroid() {
+        port1.postMessage('Message received by Webview --> '+new Date().getTime());
+    }
+</script>
+<script>
+        function guardarEnLocalStorage() {
+            // Obtener el valor del input
+            const inputValue = document.getElementById('inputTexto').value;
+
+            // Guardar el valor en localStorage
+            localStorage.setItem('datoGuardado', inputValue);
+
+            // Mostrar el valor en la etiqueta
+            document.getElementById('etiqueta').innerText = inputValue;
+        }
+
+        function cargarDesdeLocalStorage() {
+            // Obtener el valor almacenado en localStorage
+            const storedValue = localStorage.getItem('datoGuardado');
+
+            // Mostrar el valor en la etiqueta si existe
+            if (storedValue) {
+                document.getElementById('etiqueta').innerText = storedValue;
+            }
+        }
+
+        // Cargar el dato almacenado al cargar la página
+        window.onload = cargarDesdeLocalStorage;
+    </script>
+</body>
+</html>
