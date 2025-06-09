@@ -14,8 +14,52 @@
         }
     </style>
     <script src="script-local.js"></script>
+    <script>
+    console.log("tohure webview rendering");
+
+    const list = document.querySelector("ul");
+    let port1;
+
+    // Listen for the initial port transfer message
+    window.addEventListener("message", initPort);
+
+    // Setup the transfered port
+    function initPort(e) {
+      console.log("llego -->"+JSON.stringify(e.source))
+      console.log("llego -->"+JSON.stringify(e.data))
+      console.log("llego -->"+JSON.stringify(e.origin))
+
+      const listItem = document.createElement("li");
+      listItem.textContent = e.data;
+      list.appendChild(listItem);
+
+      if (e.ports[0]) {
+        console.log("hay puerto 0")
+        port1 = e.ports[0];
+        port1.onmessage = onMessage;
+      }
+    }
+
+    // Handle messages received on port0
+    function onMessage(e) {
+            console.log("Si le llegó Port1");
+            const listItem = document.createElement("li");
+            listItem.textContent = e.data;
+            list.appendChild(listItem);
+    }
+
+    function sendMessageToAndroid() {
+        port1.postMessage('Message received by Webview --> '+new Date().getTime());
+    }
+</script>
 </head>
 <body>
+    <h1>WebMessage Example</h1>
+<button onclick="sendMessageToAndroid()">Send Message to Android</button>
+<p>Esta página espera recibir mensajes desde una aplicación Android.</p>
+<ul></ul>
+</br>
+    </br>
     <h1>Integración de Archivos en un Solo Documento</h1>
 
     <h2>Prueba de acceso a archivos</h2>
